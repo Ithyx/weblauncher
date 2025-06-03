@@ -1,0 +1,6 @@
+[commands]
+
+[commands.my_command]
+target = "ping"
+# args = [ "google.com" ]
+
