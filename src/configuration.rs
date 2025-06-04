@@ -5,7 +5,7 @@ use serde::Deserialize;
 
 use crate::command::Command;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Default)]
 pub struct Config {
     #[serde(default)]
     pub commands: HashMap<String, Command>,
@@ -26,6 +26,9 @@ pub fn default_path() -> PathBuf {
 
 pub fn parse(contents: &str) -> Result<Config> {
     let config: Config = toml::from_str(contents)?;
+
+    log::info!("successfully parsed config file");
+    log::debug!("available commands are: {:?}", config.commands);
 
     Ok(config)
 }

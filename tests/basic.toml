@@ -2,5 +2,5 @@
 
 [commands.my_command]
 target = "ping"
-# args = [ "google.com" ]
+args = [ "google.com" ]
 
