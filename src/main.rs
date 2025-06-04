@@ -2,12 +2,15 @@ mod command;
 mod configuration;
 
 use std::{
+    collections::HashMap,
     path::PathBuf,
+    process::Child,
     sync::{LazyLock, RwLock},
 };
 
 use clap::{Parser, command};
 use configuration::Config;
+use rocket::serde::json::Json;
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -17,15 +20,42 @@ struct Args {
 }
 
 static CONFIG: LazyLock<RwLock<Config>> = LazyLock::new(|| RwLock::new(Default::default()));
+static RUNNING_JOBS: LazyLock<RwLock<HashMap<u32, Child>>> =
+    LazyLock::new(|| RwLock::new(Default::default()));
 
 #[macro_use]
 extern crate rocket;
 
 #[get("/")]
-fn index() -> String {
-    let commands = &CONFIG.read().unwrap().commands;
+fn index() -> Json<Vec<String>> {
+    let commands = CONFIG
+        .read()
+        .unwrap()
+        .commands
+        .clone()
+        .into_keys()
+        .collect();
 
-    format!("available commands: {commands:?}")
+    Json(commands)
+}
+
+fn execute_inner(command_name: &str) -> Result<u32, String> {
+    let cfg = CONFIG.read().unwrap();
+    let command = cfg
+        .commands
+        .get(command_name)
+        .ok_or("no such command".to_owned())?;
+
+    let child = command.execute().map_err(|err| err.to_string())?;
+    let id = child.id();
+    RUNNING_JOBS.write().unwrap().insert(id, child);
+
+    Ok(id)
+}
+
+#[post("/<command_name>")]
+fn execute(command_name: &str) -> Json<Result<u32, String>> {
+    Json(execute_inner(command_name))
 }
 
 #[launch]
@@ -53,5 +83,5 @@ fn rocket() -> _ {
         .expect("configuration file contents should be valid");
     *CONFIG.write().unwrap() = config;
 
-    rocket::build().mount("/", routes![index])
+    rocket::build().mount("/", routes![index, execute])
 }
