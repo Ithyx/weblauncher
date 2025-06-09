@@ -27,7 +27,7 @@ static RUNNING_JOBS: LazyLock<RwLock<HashMap<u32, Child>>> =
 extern crate rocket;
 
 #[get("/")]
-fn index() -> Json<Vec<String>> {
+fn list_commands() -> Json<Vec<String>> {
     let commands = CONFIG
         .read()
         .unwrap()
@@ -37,6 +37,25 @@ fn index() -> Json<Vec<String>> {
         .collect();
 
     Json(commands)
+}
+
+fn get_status_inner(command_id: u32) -> Result<command::Status, String> {
+    let mut jobs = RUNNING_JOBS.write().unwrap();
+    let handle = jobs
+        .get_mut(&command_id)
+        .ok_or("no such command".to_owned())?;
+
+    let status = match handle.try_wait().map_err(|err| err.to_string())? {
+        Some(exit_status) => command::Status::Exited(exit_status.to_string()),
+        None => command::Status::Running,
+    };
+
+    Ok(status)
+}
+
+#[get("/status/<command_id>")]
+fn get_status(command_id: u32) -> Json<Result<command::Status, String>> {
+    Json(get_status_inner(command_id))
 }
 
 fn execute_inner(command_name: &str) -> Result<u32, String> {
@@ -53,7 +72,7 @@ fn execute_inner(command_name: &str) -> Result<u32, String> {
     Ok(id)
 }
 
-#[post("/<command_name>")]
+#[post("/run/<command_name>")]
 fn execute(command_name: &str) -> Json<Result<u32, String>> {
     Json(execute_inner(command_name))
 }
@@ -83,5 +102,5 @@ fn rocket() -> _ {
         .expect("configuration file contents should be valid");
     *CONFIG.write().unwrap() = config;
 
-    rocket::build().mount("/", routes![index, execute])
+    rocket::build().mount("/", routes![list_commands, get_status, execute])
 }

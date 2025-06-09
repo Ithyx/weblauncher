@@ -4,3 +4,7 @@
 target = "ping"
 args = [ "google.com" ]
 
+[commands.instant]
+target = "echo"
+args = [ "this should exit immediately" ]
+

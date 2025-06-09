@@ -1,6 +1,12 @@
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
+#[derive(Debug, Clone, Serialize)]
+pub enum Status {
+    Running,
+    Exited(String),
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Command {
     pub target: String,
