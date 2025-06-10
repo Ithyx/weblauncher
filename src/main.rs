@@ -7,7 +7,8 @@ use std::{path::PathBuf, sync::RwLock};
 use clap::{Parser, command};
 use command::Registry;
 use configuration::Config;
-use rocket::serde::json::Json;
+use rocket::{http::Method, serde::json::Json};
+use rocket_cors::{AllowedOrigins, CorsOptions};
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -103,7 +104,22 @@ fn rocket() -> _ {
     let config = configuration::parse(&config_contents)
         .expect("configuration file contents should be valid");
 
+    let mut cors = CorsOptions::default()
+        .allowed_origins(AllowedOrigins::some_null())
+        .allowed_methods(
+            vec![Method::Get, Method::Post]
+                .into_iter()
+                .map(From::from)
+                .collect(),
+        );
+
+    if cfg!(debug_assertions) {
+        log::warn!("Launching in debug, opening CORS to all");
+        cors = cors.allowed_origins(AllowedOrigins::all());
+    }
+
     rocket::build()
+        .attach(cors.to_cors().unwrap())
         .manage(RwLock::new(Registry::new(&config)))
         .manage(config)
         .mount("/", routes![list_commands, get_status, execute, kill])
