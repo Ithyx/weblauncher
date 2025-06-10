@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize, ser::SerializeStructVariant};
 
 use crate::configuration::Config;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Status {
     NotStarted,
     Running,
@@ -117,6 +117,11 @@ impl Registry {
     }
 
     pub fn kill(&mut self, command_name: String) -> Result<(), String> {
+        let latest_status = self.get_latest_status(command_name.clone())?;
+        if latest_status != Status::Running {
+            return Err("command not running".to_owned());
+        }
+
         let process = self
             .process_handles
             .get_mut(&command_name)
