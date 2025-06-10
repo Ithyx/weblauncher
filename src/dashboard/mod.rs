@@ -1,6 +1,6 @@
 use rocket::{http::ContentType, response::content::RawHtml};
 
-#[get("/dashboard")]
+#[get("/")]
 pub fn render() -> RawHtml<&'static str> {
     RawHtml(include_str!("dashboard.html"))
 }

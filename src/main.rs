@@ -20,7 +20,7 @@ struct Args {
 #[macro_use]
 extern crate rocket;
 
-#[get("/")]
+#[get("/list")]
 fn list_commands(config: &rocket::State<Config>) -> Json<Vec<String>> {
     let commands = config.commands.keys().cloned().collect();
 
@@ -128,6 +128,6 @@ fn rocket() -> _ {
         .attach(cors.to_cors().unwrap())
         .manage(RwLock::new(Registry::new(&config)))
         .manage(config)
-        .mount("/", routes![list_commands, get_status, execute, kill])
+        .mount("/api", routes![list_commands, get_status, execute, kill])
         .mount("/", routes![dashboard::render, dashboard::favicon])
 }
