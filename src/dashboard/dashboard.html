@@ -83,7 +83,7 @@
                 field.innerText = status;
             }
             setTimeout
-            async_http_request("GET", `http://127.0.0.1:8000/status/${command}`, callback);
+            async_http_request("GET", `${window.location.origin}/status/${command}`, callback);
         }
 
         function createCommandHTML(command) {
@@ -95,11 +95,11 @@
 
             <br>
             <br>
-            <button onclick='async_http_request("POST", "http://127.0.0.1:8000/run/${command}",
+            <button onclick='async_http_request("POST", "${window.location.origin}/run/${command}",
                 (answer) => {console.log(answer); updateCommandStatus("${command}");})'>
                     <span class="button_top">run</span>
             </button>
-            <button onclick='async_http_request("POST", "http://127.0.0.1:8000/kill/${command}",
+            <button onclick='async_http_request("POST", "${window.location.origin}/kill/${command}",
                 (answer) => {console.log(answer); updateCommandStatus("${command}");})'>
                     <span class="button_top">kill</span>
             </button>
@@ -132,7 +132,7 @@
             }
         }
 
-        async_http_request("GET", "http://127.0.0.1:8000/", displayCommands);
+        async_http_request("GET", `${window.location.origin}/`, displayCommands);
     </script>
 </head>
 

@@ -118,7 +118,13 @@ fn rocket() -> _ {
         cors = cors.allowed_origins(AllowedOrigins::all());
     }
 
+    let rocket_config = rocket::Config {
+        address: [0, 0, 0, 0].into(),
+        ..Default::default()
+    };
+
     rocket::build()
+        .configure(rocket_config)
         .attach(cors.to_cors().unwrap())
         .manage(RwLock::new(Registry::new(&config)))
         .manage(config)
