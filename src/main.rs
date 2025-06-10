@@ -105,7 +105,7 @@ fn rocket() -> _ {
         .expect("configuration file contents should be valid");
 
     let mut cors = CorsOptions::default()
-        .allowed_origins(AllowedOrigins::some_exact(&config.allowed_origins))
+        .allowed_origins(AllowedOrigins::some_regex(&config.allowed_origins))
         .allowed_methods(
             vec![Method::Get, Method::Post]
                 .into_iter()
