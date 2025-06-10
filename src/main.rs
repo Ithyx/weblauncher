@@ -70,6 +70,14 @@ fn execute(
     Json(execute_inner(command_name, config, cmd_reg))
 }
 
+#[post("/kill/<command_name>")]
+fn kill(
+    command_name: &str,
+    cmd_reg: &rocket::State<RwLock<command::Registry>>,
+) -> Json<Result<(), String>> {
+    Json(cmd_reg.write().unwrap().kill(command_name.to_owned()))
+}
+
 #[launch]
 fn rocket() -> _ {
     simple_logger::SimpleLogger::new()
@@ -97,5 +105,5 @@ fn rocket() -> _ {
     rocket::build()
         .manage(RwLock::new(Registry::new(&config)))
         .manage(config)
-        .mount("/", routes![list_commands, get_status, execute])
+        .mount("/", routes![list_commands, get_status, execute, kill])
 }

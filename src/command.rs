@@ -88,14 +88,14 @@ impl Registry {
 
         match last_status {
             Status::Running => {
-                let child = self
+                let process = self
                     .process_handles
                     .get_mut(&command_name)
                     .ok_or("no such running command")?
                     .as_mut()
                     .ok_or("command not running")?;
 
-                match child.try_wait().map_err(|err| err.to_string())? {
+                match process.try_wait().map_err(|err| err.to_string())? {
                     Some(exit_status) => {
                         let new_status = Status::Exited(exit_status);
                         *last_status = new_status.clone();
@@ -114,5 +114,18 @@ impl Registry {
     pub fn register_new_process(&mut self, command_name: String, process: Child) {
         self.statuses.insert(command_name.clone(), Status::Running);
         self.process_handles.insert(command_name, Some(process));
+    }
+
+    pub fn kill(&mut self, command_name: String) -> Result<(), String> {
+        let process = self
+            .process_handles
+            .get_mut(&command_name)
+            .ok_or("no such running command")?
+            .as_mut()
+            .ok_or("command not running")?;
+
+        process.kill().map_err(|err| err.to_string())?;
+
+        Ok(())
     }
 }
