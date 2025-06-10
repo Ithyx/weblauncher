@@ -120,6 +120,7 @@ fn rocket() -> _ {
 
     let rocket_config = rocket::Config {
         address: [0, 0, 0, 0].into(),
+        port: config.port.unwrap_or(8000),
         ..Default::default()
     };
 

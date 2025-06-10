@@ -7,6 +7,8 @@ use crate::command::Command;
 
 #[derive(Debug, Deserialize, Default)]
 pub struct Config {
+    pub port: Option<u16>,
+
     #[serde(default)]
     pub commands: HashMap<String, Command>,
 }

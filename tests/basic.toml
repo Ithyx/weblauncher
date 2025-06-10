@@ -1,4 +1,4 @@
-[commands]
+port = 56740
 
 [commands.my_command]
 target = "ping"
