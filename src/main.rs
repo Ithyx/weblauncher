@@ -123,5 +123,5 @@ fn rocket() -> _ {
         .manage(RwLock::new(Registry::new(&config)))
         .manage(config)
         .mount("/", routes![list_commands, get_status, execute, kill])
-        .mount("/dashboard", routes![dashboard::render])
+        .mount("/", routes![dashboard::render, dashboard::favicon])
 }

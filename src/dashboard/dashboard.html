@@ -1,2 +1,147 @@
+<!DOCTYPE html>
 
+<head>
+    <title>Weblauncher dashboard</title>
+    <style>
+        :root {
+            --bg-color: #957D95;
+            --accent-color: #E49AB0;
+            --strong-bg: #904C77;
+            --light: #ECB8A5;
+            --emph-color: #ECCFC3;
+        }
 
+        body {
+            background-color: var(--bg-color);
+        }
+
+        #command_list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1em;
+        }
+
+        .cmd-container {
+            border: solid var(--strong-bg);
+            border-radius: 7px;
+            background-color: var(--light);
+            flex: 1 1 33%;
+            padding: 0.4em;
+        }
+
+        /* From Uiverse.io by Voxybuns */
+        button {
+            /* Variables */
+            --button_radius: 0.75em;
+            --button_color: var(--emph-color);
+            --button_outline_color: #000000;
+            font-size: medium;
+            font-weight: normal;
+            border: none;
+            cursor: pointer;
+            border-radius: var(--button_radius);
+            background: var(--button_outline_color);
+        }
+
+        .button_top {
+            display: block;
+            box-sizing: border-box;
+            border: 2px solid var(--button_outline_color);
+            border-radius: var(--button_radius);
+            padding: 0.50em 1.0em;
+            background: var(--button_color);
+            color: var(--button_outline_color);
+            transform: translateY(-0.2em);
+            transition: transform 0.1s ease;
+        }
+
+        button:hover .button_top {
+            /* Pull the button upwards when hovered */
+            transform: translateY(-0.33em);
+        }
+
+        button:active .button_top {
+            /* Push the button downwards when pressed */
+            transform: translateY(0);
+        }
+    </style>
+    <script>
+        function async_http_request(verb, url, callback) {
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.onreadystatechange = function () {
+                if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+                    callback(xmlHttp.responseText);
+            }
+            xmlHttp.open(verb, url, true); // true for asynchronous 
+            xmlHttp.send(null);
+        }
+
+        function updateCommandStatus(command) {
+            let callback = (status) => {
+                let field = document.getElementById(`cmd-${command}-status`);
+
+                field.innerText = status;
+            }
+            setTimeout
+            async_http_request("GET", `http://127.0.0.1:8000/status/${command}`, callback);
+        }
+
+        function createCommandHTML(command) {
+            let container = document.createElement("div");
+            container.id = `cmd-${command}`;
+            container.classList.add("cmd-container");
+            container.innerHTML = `
+            ${command}
+
+            <br>
+            <br>
+            <button onclick='async_http_request("POST", "http://127.0.0.1:8000/run/${command}",
+                (answer) => {console.log(answer); updateCommandStatus("${command}");})'>
+                    <span class="button_top">run</span>
+            </button>
+            <button onclick='async_http_request("POST", "http://127.0.0.1:8000/kill/${command}",
+                (answer) => {console.log(answer); updateCommandStatus("${command}");})'>
+                    <span class="button_top">kill</span>
+            </button>
+            <br>
+            <br>
+
+            command latest status:
+            <br>
+            <code id="cmd-${command}-status"></code>
+            <br>
+            <br>
+            <button onclick='updateCommandStatus("${command}")'>
+                <span class="button_top">update</span>
+            </button>
+            `;
+
+            return container;
+        }
+
+        function displayCommands(commands_text) {
+            let commands = JSON.parse(commands_text);
+            console.log("got commands: ", commands);
+
+            let list = document.getElementById("command_list");
+
+            for (const command of commands) {
+                let cmd_html = createCommandHTML(command);
+                list.appendChild(cmd_html);
+                updateCommandStatus(command);
+            }
+        }
+
+        async_http_request("GET", "http://127.0.0.1:8000/", displayCommands);
+    </script>
+</head>
+
+<body>
+    <div style="width: 100%; text-align: center;">
+        <h1>available commands</h1>
+
+        <ul id="command_list">
+
+        </ul>
+    </div>
+</body>
