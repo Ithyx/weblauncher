@@ -105,7 +105,7 @@ fn rocket() -> _ {
         .expect("configuration file contents should be valid");
 
     let mut cors = CorsOptions::default()
-        .allowed_origins(AllowedOrigins::some_null())
+        .allowed_origins(AllowedOrigins::some_exact(&config.allowed_origins))
         .allowed_methods(
             vec![Method::Get, Method::Post]
                 .into_iter()
@@ -119,7 +119,7 @@ fn rocket() -> _ {
     }
 
     let rocket_config = rocket::Config {
-        address: [0, 0, 0, 0].into(),
+        address: config.address.unwrap_or([0, 0, 0, 0].into()),
         port: config.port.unwrap_or(8000),
         ..Default::default()
     };

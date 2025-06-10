@@ -1,4 +1,4 @@
-use std::{collections::HashMap, path::PathBuf};
+use std::{collections::HashMap, net::IpAddr, path::PathBuf};
 
 use anyhow::Result;
 use serde::Deserialize;
@@ -7,7 +7,11 @@ use crate::command::Command;
 
 #[derive(Debug, Deserialize, Default)]
 pub struct Config {
+    pub address: Option<IpAddr>,
     pub port: Option<u16>,
+
+    #[serde(default)]
+    pub allowed_origins: Vec<String>,
 
     #[serde(default)]
     pub commands: HashMap<String, Command>,
