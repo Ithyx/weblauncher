@@ -1,4 +1,5 @@
 port = 56740
+allowed_origins = [ "test" ]
 
 [commands.my_command]
 target = "ping"
