@@ -1,7 +1,7 @@
 [package]
 name = "weblauncher"
 description = "execute commands through a web interface"
-version = "1.2.0"
+version = "1.3.0"
 repository = "https://github.com/Ithyx/WebLauncher"
 license = "MIT OR Apache-2.0"
 readme = "README.md"
